@@ -1,0 +1,37 @@
+#!/bin/bash
+
+function exec_hooks() {
+    DIR=$(pwd)
+    while svn info $DIR >/dev/null 2>&1
+    do
+        test -d $DIR/.svnhooks && break
+        DIR=$(basename $DIR)
+    done
+    svn info $DIR >/dev/null 2>&1 || return
+    test -d $DIR/.svnhooks || return
+    test -d $DIR/.svnhooks/$1 || return
+
+    run-parts $DIR/.svnhooks/$1
+}
+
+COMMAND=$1
+
+case $COMMAND in
+    commit|ci)
+        exec_hooks pre-commit
+    ;;
+    update|up)
+        exec_hooks pre-update
+    ;;
+esac
+
+/usr/bin/svn $*
+
+case $COMMAND in
+    commit|ci)
+        exec_hooks post-commit
+    ;;
+    update|up)
+        exec_hooks post-update
+    ;;
+esac
