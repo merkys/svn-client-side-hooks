@@ -1,0 +1,8 @@
+#!/bin/bash
+
+find . -type f \
+    | while read FILE
+      do
+        MTIME=$(TZ=UTC stat "$FILE" | grep ^Modify: | cut -d ' ' -f 2- | perl -lpe 's/ ([-+])/$1/')
+        svn propset timestamp "$MTIME" "$FILE"
+      done
