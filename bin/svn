@@ -28,6 +28,9 @@ esac
 /usr/bin/svn $*
 
 case $COMMAND in
+    checkout|co)
+        exec_hooks post-checkout
+    ;;
     commit|ci)
         exec_hooks post-commit
     ;;
