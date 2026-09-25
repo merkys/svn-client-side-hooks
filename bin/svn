@@ -1,27 +1,19 @@
 #!/bin/bash
 
 function exec_hooks() {
-    DIR=$(pwd)
-    while svn info $DIR >/dev/null 2>&1
-    do
-        test -d $DIR/.svnhooks && break
-        DIR=$(basename $DIR)
-    done
-    svn info $DIR >/dev/null 2>&1 || return
-    test -d $DIR/.svnhooks || return
-    test -d $DIR/.svnhooks/$1 || return
-
-    run-parts $DIR/.svnhooks/$1
+    WCROOT=$(svn info | grep '^Working Copy Root Path: ' | cut -d : -f 1)
+    HOOK=$WCROOT/.svnhooks/$1
+    test -x $HOOK && $HOOK $@
 }
 
 COMMAND=$1
 
 case $COMMAND in
     commit|ci)
-        exec_hooks pre-commit
+        exec_hooks pre-commit $@
     ;;
     update|up)
-        exec_hooks pre-update
+        exec_hooks pre-update $@
     ;;
 esac
 
@@ -29,12 +21,12 @@ esac
 
 case $COMMAND in
     checkout|co)
-        exec_hooks post-checkout
+        exec_hooks post-checkout $@
     ;;
     commit|ci)
-        exec_hooks post-commit
+        exec_hooks post-commit $@
     ;;
     update|up)
-        exec_hooks post-update
+        exec_hooks post-update $@
     ;;
 esac
