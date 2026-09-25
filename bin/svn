@@ -1,9 +1,14 @@
 #!/bin/bash
 
 function exec_hooks() {
-    WCROOT=$(svn info | grep '^Working Copy Root Path: ' | cut -d : -f 1)
+    WCROOT=$(svn info | grep '^Working Copy Root Path: ' | cut -d : -f 2)
     HOOK=$WCROOT/.svnhooks/$1
-    test -x $HOOK && $HOOK $@
+    if [ -x $HOOK ]
+    then
+        shift # Removes $1
+        shift # Removes second word of svn command call
+        $HOOK $@ || exit $?
+    fi
 }
 
 COMMAND=$1
